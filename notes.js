@@ -1,21 +1,32 @@
 const fs = require("fs");
 const chalk = require("chalk");
 
-const getNotes = function() {
-  return "Your Notes iss ";
+///////////////////***NON EXPORT FUNCTIONS***///////////////////////////////////////////////////
+
+const saveNotes = notes => {
+  const dataJson = JSON.stringify(notes);
+  fs.writeFileSync("notes.json", dataJson);
 };
 
-const addNotes = function(title, body) {
-  // load notes
-  // check if title is taken
-  // if title is not taken, add this new note
-  // save note
-  var notes = loadNotes();
-  var duplicateNotes = notes.filter(function(note) {
-    return note.title == title;
-  });
+const loadNotes = () => {
+  try {
+    debugger;
+    const dataBuffer = fs.readFileSync("notes.json");
+    const dataJson = dataBuffer.toString();
+    return JSON.parse(dataJson);
+  } catch (e) {
+    return [];
+  }
+};
+//////////////////////////////////////////////////////////
 
-  if (duplicateNotes.length == 0) {
+///////////////////////***EXPORT FUNCTIONS****//////////////////////////////////
+
+const addNotes = (title, body) => {
+  var notes = loadNotes();
+  var duplicateNotes = notes.find(note => note.title == title);
+
+  if (duplicateNotes === undefined) {
     notes.push({
       title: title,
       body: body
@@ -28,13 +39,9 @@ const addNotes = function(title, body) {
   }
 };
 
-const removeNote = function(title) {
+const removeNote = title => {
   var notes = loadNotes();
-  
-
-  var newNotes = notes.filter(function(note) {
-    return note.title != title;
-  });
+  var newNotes = notes.filter(note => note.title != title);
 
   if (notes.length === newNotes.length) {
     console.log(chalk.red.inverse("no changes Made"));
@@ -45,23 +52,29 @@ const removeNote = function(title) {
   }
 };
 
-const saveNotes = function(notes) {
-  const dataJson = JSON.stringify(notes);
-  fs.writeFileSync("notes.json", dataJson);
+const listNotes = () => {
+  var notes = loadNotes();
+
+  notes.forEach(note => {
+    console.log(chalk.redBright(chalk.green.bold(note.title) + "\n"));
+  });
 };
 
-const loadNotes = function() {
+const readNote = title => {
+  var notes = loadNotes();
+  var note = notes.find(note => note.title === title);
   try {
-    const dataBuffer = fs.readFileSync("notes.json");
-    const dataJson = dataBuffer.toString();
-    return JSON.parse(dataJson);
+    console.log(chalk.bold.black(note.title) + "\n" + note.body);
   } catch (e) {
-    return [];
+    console.log(chalk.redBright("No note with title " + title));
   }
 };
 
+////////////////////////////////////////////////////////
+
 module.exports = {
-  getNotes: getNotes,
   addNotes: addNotes,
-  removeNote: removeNote
+  removeNote: removeNote,
+  listNotes: listNotes,
+  readNote: readNote
 };
